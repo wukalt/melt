@@ -1,6 +1,7 @@
 import sys
+import loguru
 from types import FunctionType
-from typing import Any
+from typing import Any, Optional
 
 
 def find_function(handlers, function_name: str) -> FunctionType | None:
@@ -21,11 +22,17 @@ def generate_auto_switch(switches_names, function_name: str, index: int = 1) -> 
 
 
 class Melt:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        description: Optional[str] = None,
+    ) -> None:
         self.filename: str = sys.argv.pop(0)
+        self.description = description
         self.switches_names: list[str] = []
         self.handlers: dict[str, dict[str, Any]] = {}
 
+    @loguru.logger.catch()
     def __call__(self) -> Any:
         from_index = 0
 
@@ -47,10 +54,13 @@ class Melt:
                 from_index += 1
                 into += 1
 
-                handler(*sys.argv[from_index:into])
+                try:
+                    handler(*sys.argv[from_index:into])
+                except TypeError as e:
+                    loguru.logger.error(e)
                 from_index += function_args_count
 
-    def command(self, flag: bool = True):
+    def command(self):
         def execute(func: FunctionType):
             self.handlers[func.__name__] = {"handler": func, "is_switch": False}
 
@@ -62,7 +72,7 @@ class Melt:
 
         return execute
 
-    def switch(self, flag: bool = True):
+    def switch(self):
         def execute(func: FunctionType):
             name = generate_auto_switch(self.switches_names, func.__name__)
             self.handlers[name] = {"handler": func, "is_switch": True}
@@ -78,6 +88,7 @@ class Melt:
 
 def show_help(melt_obj: Melt):
     print(f"Help table of -> {melt_obj.filename}:")
+    print(melt_obj.description)
     print("".join("=" for _ in range(100)))
 
     for func_name in melt_obj.handlers.keys():
