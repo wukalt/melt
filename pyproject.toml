@@ -1,7 +1,10 @@
 [project]
 name = "melt"
 version = "0.1.0"
-description = "Add your description here"
+description = "simple python CLI manager."
+authors = [
+    {name = "Mehdi (wuKalt) Mohseni", email = "wuka.sec@gmail.com"}
+]
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -11,3 +14,8 @@ dependencies = [
     "pytest-cov>=7.1.0",
     "pytest-watch>=4.2.0",
 ]
+
+
+
+[project.urls]
+"Homepage" = "https://github.com/wukalt/melt"
